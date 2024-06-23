@@ -224,6 +224,9 @@ pub fn pad_and_hash_bytes_no_len(bytes: &[u8], max_bytes: usize) -> anyhow::Resu
 /// This is used when we want to preserve the length of the `bytes` to prevent collisions where `bytes` could terminate in 0's.
 pub fn pad_and_hash_bytes_with_len(bytes: &[u8], max_bytes: usize) -> anyhow::Result<Fr> {
     let scalars = pad_and_pack_bytes_to_scalars_with_len(bytes, max_bytes)?;
+    for (i, scalar) in scalars.iter().enumerate() {
+        println!("Scalar {}: {}", i, scalar);
+    }
     hash_scalars(scalars)
 }
 
@@ -317,8 +320,29 @@ mod test {
         keyless::{pack_bytes_to_scalars, BYTES_PACKED_PER_SCALAR, MAX_NUM_INPUT_BYTES},
         MAX_NUM_INPUT_SCALARS,
     };
-    use ark_ff::{BigInteger, One, PrimeField, Zero};
+    use ark_ff::{BigInteger, One, PrimeField, Zero, Fp};
     use num_bigint::BigUint;
+    use std::str::FromStr;
+
+
+    #[test]
+    fn test_portkey_id_hash() {
+        let aud = "110117207114221115868";
+        const LEN: usize = 255;
+        let aud = keyless::pad_and_pack_bytes_to_scalars_no_len(aud.as_bytes(), LEN).unwrap();
+        let aud_val_hash = keyless::hash_scalars(aud).unwrap();
+
+        let salt = ark_bn254::Fr::from_str("221272845528359990576906764860748045235").unwrap();
+        // "a677999396dc49a28ad6c9c242719bb3";
+
+        let id_hash = keyless::hash_scalars(vec![aud_val_hash, salt]).unwrap();
+
+        assert_eq!(
+            id_hash.to_string(),
+            "15414228609584168622232657663363791512547088596271261612625819385055329082424"
+        );
+    }
+
 
     #[test]
     fn test_poseidon_bn254_pad_and_hash_bytes() {
