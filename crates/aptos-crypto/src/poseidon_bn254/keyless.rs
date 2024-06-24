@@ -332,8 +332,8 @@ mod test {
         let aud = keyless::pad_and_pack_bytes_to_scalars_no_len(aud.as_bytes(), LEN).unwrap();
         let aud_val_hash = keyless::hash_scalars(aud).unwrap();
 
-        let salt = ark_bn254::Fr::from_str("221272845528359990576906764860748045235").unwrap();
-        // "a677999396dc49a28ad6c9c242719bb3";
+        let salt = ark_bn254::Fr::from_str("238738914460200877251263498453947873190").unwrap();
+        // int(bytes(reversed(bytes.fromhex("a677999396dc49a28ad6c9c242719bb3"))).hex(), 16)
 
         let id_hash = keyless::hash_scalars(vec![aud_val_hash, salt]).unwrap();
 
